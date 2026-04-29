@@ -156,10 +156,19 @@ def main():
     side and the opposite side before returning to the original starting
     point.
     """
+    lift_motor = Motor(Port.A)
 
+    lift_motor.reset_angle(0)
+    lift_motor.run_target(100, 110)
     # Step 1:
     # Move forward 1000 mm from the starting point.
     move_and_wait(284)
+
+    lift_motor = Motor(Port.A)
+
+    lift_motor.run_target(100, -110)
+
+    robot.settings(straight_speed=300, turn_rate=0)
 
     move_and_wait(-284)
 
