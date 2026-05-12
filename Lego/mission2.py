@@ -132,7 +132,8 @@ def main():
     # Step 3: Turn right 90°
     turn(-90)
 
-    Step 4: Move forward 280 mm – if on a line, use line_follow(280)
+    # Step 4: Move forward 280 mm – if on a line, use 
+    line_follow(280)
     # move(280)                 
 
     # Turn left 90°
