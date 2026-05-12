@@ -1,134 +1,204 @@
 #!/usr/bin/env pybricks-micropython
 
 """
-Mission 3 - FIRST LEGO League 2022
-======================================
-Base route (shared with Mission 2):
-  1.  16.5 cm straight
-  2.  17 cm curving right
-  3.  Turn left 30 degrees
-  4.  30 cm straight
-  5.  Left curve 20 degrees
-  6.  21 cm straight
-  7.  Turn right 90 degrees
-  8.  60 cm straight  <-- arrives at mission area
+Mission 3 – With dynamic colour sensor calibration
+===================================================
+Calibrates the colour sensor on the real mat before starting,
+then follows the black line using the calculated edge threshold.
 
-Mission 3 specific:
-  9.  Turn around 270 degrees (clockwise / right)
-  10. Drive forward 21 cm
+Uses the lift motor (Port A) as attachment:
+  - arm_down() = open/lower to collect/release
+  - arm_up()   = close/raise to secure
+
+Path:
+ 1. Forward 180 mm on line
+ 2. Left 50°, forward 100 mm
+ 3. Right 90°, forward 280 mm on line
+ 4. Right 270°
+ 5. Lower arm (open), wait, raise arm (close) → secure items
+ 6. Right 50°, forward 250 mm on line
+ 7. Right 90°, forward 400 mm on line
+ 8. Celebrate
 """
 
 from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import Motor
+from pybricks.ev3devices import Motor, ColorSensor
 from pybricks.parameters import Port
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait
 
 # --------------------------------------------------
-# Device setup
+# Hardware
 # --------------------------------------------------
-
 ev3 = EV3Brick()
 
 left_motor  = Motor(Port.B)
 right_motor = Motor(Port.C)
-lift_motor  = Motor(Port.A)
 
-WHEEL_DIAMETER = 56
-AXLE_TRACK     = 123
+# Arm motor on Port A
+lift_motor = Motor(Port.A)
 
-robot = DriveBase(left_motor, right_motor, WHEEL_DIAMETER, AXLE_TRACK)
+# Colour sensor – match the port from your sample (S3 in the example)
+line_sensor = ColorSensor(Port.S3)
+
+# Robot dimensions (same as sample)
+robot = DriveBase(left_motor, right_motor, wheel_diameter=56, axle_track=121)
+
+# Default drive settings – will be overridden by line follower speeds
 robot.settings(straight_speed=200, turn_rate=90)
 
 # --------------------------------------------------
-# Helper functions
+# Global variables that will be set after calibration
 # --------------------------------------------------
-
-def move(distance_mm):
-    """Drive straight. Positive = forward, negative = backward."""
-    robot.straight(distance_mm)
-    wait(300)
-
-def turn(angle_deg):
-    """
-    Turn in place.
-    Positive = left (counter-clockwise).
-    Negative = right (clockwise).
-    """
-    robot.turn(angle_deg)
-    wait(300)
-
-def curve(distance_mm, steering):
-    """
-    Drive an arc for a set distance.
-    steering > 0 curves left, steering < 0 curves right.
-    Uses time-based loop at 200 mm/s.
-    """
-    duration_ms = int(abs(distance_mm / 200) * 1000)
-    elapsed = 0
-    while elapsed < duration_ms:
-        robot.drive(200, steering)
-        wait(10)
-        elapsed += 10
-    robot.stop()
-    wait(300)
+TARGET_THRESHOLD = 40   # placeholder – will be updated by calibration
+PROPORTIONAL_GAIN = 1.2 # can also be tuned if needed
 
 # --------------------------------------------------
-# Shared base route
+# Calibration function (exactly as in your working sample)
 # --------------------------------------------------
+def calibrate_sensor():
+    """Measure black and white on the mat, compute edge threshold."""
+    global TARGET_THRESHOLD
 
-def run_base_route():
-    """Drive from home base to the mission area."""
-
-    # 1. 16.5 cm straight
-    move(165)
-
-    # 2. 17 cm curving right
-    curve(170, -20)
-
-    # 3. Turn left 30 degrees
-    turn(30)
-
-    # 4. 30 cm straight
-    move(300)
-
-    # 5. Left curve 20 degrees
-    curve(80, 20)
-
-    # 6. 21 cm straight
-    move(210)
-
-    # 7. Turn right 90 degrees
-    turn(-90)
-
-    # 8. 60 cm straight to reach mission area
-    move(600)
-
-# --------------------------------------------------
-# Mission 3
-# --------------------------------------------------
-
-def main():
     ev3.screen.clear()
-    ev3.screen.draw_text(0, 40, "Mission 3")
+    ev3.screen.draw_text(0, 20, "Place on BLACK")
+    ev3.screen.draw_text(0, 50, "Press any btn")
+
+    # Wait for button press
+    while len(ev3.buttons.pressed()) == 0:
+        wait(10)
+
+    black_value = line_sensor.reflection()
+    ev3.speaker.beep(500, 200)
+
+    # Debounce
+    while len(ev3.buttons.pressed()) > 0:
+        wait(10)
+
+    ev3.screen.clear()
+    ev3.screen.draw_text(0, 20, "Place on WHITE")
+    ev3.screen.draw_text(0, 50, "Press any btn")
+
+    while len(ev3.buttons.pressed()) == 0:
+        wait(10)
+
+    white_value = line_sensor.reflection()
+    ev3.speaker.beep(1000, 200)
+
+    while len(ev3.buttons.pressed()) > 0:
+        wait(10)
+
+    # Calculate target threshold – exactly the edge of the line
+    TARGET_THRESHOLD = (black_value + white_value) / 2
+
+    ev3.screen.clear()
+    ev3.screen.draw_text(0, 10, "Blk: " + str(black_value))
+    ev3.screen.draw_text(0, 30, "Wht: " + str(white_value))
+    ev3.screen.draw_text(0, 60, "Thr: " + str(TARGET_THRESHOLD))
+    wait(2000)   # show calibration results for 2 seconds
+
+# --------------------------------------------------
+# Movement helpers
+# --------------------------------------------------
+def move(distance):
+    """Straight move without line following."""
+    robot.straight(distance)
+
+def turn(angle):
+    """Turn in place (positive = left)."""
+    robot.turn(angle)
+
+def celebrate():
+    """Sound feedback."""
     ev3.speaker.beep()
+    wait(100)
+    ev3.speaker.beep()
+    ev3.speaker.beep()
+    wait(100)
+    ev3.speaker.beep()
+
+# --------------------------------------------------
+# Arm (attachment) helpers
+# --------------------------------------------------
+def arm_up():
+    """Raise the arm (close attachment)."""
+    lift_motor.reset_angle(0)
+    lift_motor.run_target(100, 110)   # up position
     wait(500)
 
-    # Drive to mission area using shared base route
-    run_base_route()
+def arm_down():
+    """Lower the arm (open attachment)."""
+    lift_motor.run_target(100, -110)  # down position
+    wait(500)
 
-    # Step 9 - Turn 270 degrees clockwise (right = negative in Pybricks)
-    # Pybricks robot.turn() handles large angles correctly in one call,
-    # just like turn_360.py demonstrates with 360-degree turns.
+# --------------------------------------------------
+# Line follower – now uses the calibrated TARGET_THRESHOLD
+# --------------------------------------------------
+def line_follow(distance_mm):
+    """
+    Follow the black line for **distance_mm** using
+    the dynamically calibrated threshold.
+    """
+    DRIVE_SPEED = 100           # mm/s – slower than default for better control
+    travelled = 0
+
+    robot.reset()
+    while travelled < distance_mm:
+        current_reflection = line_sensor.reflection()
+        error = current_reflection - TARGET_THRESHOLD
+        steering = error * PROPORTIONAL_GAIN
+        robot.drive(DRIVE_SPEED, steering)
+        travelled = robot.distance()
+        wait(10)                # small pause for stability
+
+    robot.stop()
+
+# --------------------------------------------------
+# Main mission
+# --------------------------------------------------
+def main():
+    ev3.screen.clear()
+
+    # 0. Calibrate the colour sensor interactively
+    calibrate_sensor()
+
+    ev3.screen.clear()
+    ev3.screen.draw_text(0, 50, "Running Mission 3...")
+    wait(500)
+
+    # 1. Forward 180 mm on the line
+    line_follow(180)
+
+    # 2. Turn left 50°, then 100 mm on the line (or move(100) if no line)
+    turn(50)
+    line_follow(100)
+
+    # 3. Turn right 90°, then 280 mm on the line
+    turn(-90)
+    line_follow(280)
+
+    # 4. Turn right 270°
     turn(-270)
 
-    # Step 10 - Drive forward 21 cm
-    move(210)
+    # 5. Open attachment, wait, close to secure
+    arm_down()                 # open / lower
+    wait(300)
+    arm_up()                   # close / raise
+    wait(300)
 
-    # Done
-    ev3.speaker.beep(1000, 500)
-    ev3.screen.clear()
-    ev3.screen.draw_text(0, 40, "Done!")
+    # 6. Turn right 50°, then 250 mm on the line
+    turn(-50)
+    line_follow(250)
 
+    # 7. Turn right 90°, then 400 mm on the line
+    turn(-90)
+    line_follow(400)
+
+    # 8. Done!
+    celebrate()
+
+# --------------------------------------------------
+# Run the mission
+# --------------------------------------------------
 if __name__ == "__main__":
     main()
