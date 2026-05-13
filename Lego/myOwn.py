@@ -107,7 +107,11 @@ def move(distance):
     """
     # Move the robot straight for the given distance.
     robot.straight(distance)
+    print(f"Moving {distance} mm")
 
+def pause(pause = 2000):
+    wait(pause)
+    print(f"Pausing {pause} milliseconds")
 
 
 def turn(angle):
@@ -121,6 +125,8 @@ def turn(angle):
     """
     # Turn the robot by the given angle.
     robot.turn(angle)
+    print(f"Turning {angle} degrees")
+
 
 
 def celebrate():

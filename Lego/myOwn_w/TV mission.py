@@ -114,7 +114,7 @@ robot.settings(straight_speed=200, turn_rate=90)
 # Helper functions
 # --------------------------------------------------
 
-def move(distance, pause=2000):
+def move(distance):
     """
     Move the robot in a straight line.
 
@@ -125,9 +125,11 @@ def move(distance, pause=2000):
     """
     # Move the robot straight for the given distance.
     robot.straight(distance)
+    print(f"Moving {distance} mm")
 
+def pause(pause = 2000):
     wait(pause)
-
+    print(f"Pausing {pause} milliseconds")
 
 
 def turn(angle):
@@ -141,6 +143,7 @@ def turn(angle):
     """
     # Turn the robot by the given angle.
     robot.turn(angle)
+    print(f"Turning {angle} degrees")
 
 
 def celebrate():
@@ -159,22 +162,15 @@ def celebrate():
 
 
 def main():
-    """
-    Run the main cross-shaped movement routine.
-
-    The robot starts at a centre point, moves forward, then explores one
-    side and the opposite side before returning to the original starting
-    point.
-    """
 
     # Step 1:
     # Move forward 180 mm(18 cm) from the starting point.
-    move(180)
+    move(100)
 
     # Step 2:
-    # Turn left 50 degrees.
-    # In Pybricks, a negative angle means a right turn.
-    turn(50)
+    # Turn left 90 degrees.
+    # In Pybricks, a negative angle means a left turn.
+    turn(90)
 
     # Move forward 100 mm(10 cm).
     move(100)
@@ -185,30 +181,18 @@ def main():
 
     # Step 4:
     # Move forward 280 mm(28 cm).
-    move(280)
+    move(250)
 
 
-    # Turn 90 degrees to the left.
-    turn(90)
+    pause(200)
 
-    # Step 5:
-    #Lower the extension
-    lift_motor.run_target(100, -110)
-    # Raise the extension
-    lift_motor.reset_angle(0)
-    lift_motor.run_target(100, 110)
+    move(50)
+    move(-20)
 
+    turn(-180)
 
+    # move(200)
 
-    # Step 6: Reverse and move back to starting position.
-    # Reverse
-    move(-70)
-    # Turn to the right
-    turn(-90)
-    # Move forward 250mm(25 cm)
-    move(100)
-    # Turn to the right
-    turn(-90)
     
     while True:
     
