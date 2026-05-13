@@ -35,7 +35,7 @@ right_motor = Motor(Port.C)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  NEW – colour sensor on port S1 (change if yours is on S2, S3 …)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-color_sensor = ColorSensor(Port.S1)
+color_sensor = ColorSensor(Port.S3)
 
 # Robot measurements
 wheel_diameter = 56
