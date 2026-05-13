@@ -92,7 +92,7 @@ robot.settings(straight_speed=200, turn_rate=90)
 # Helper functions
 # --------------------------------------------------
 
-def move(distance, pause=2000):
+def move(distance):
     """
     Move the robot in a straight line.
 
@@ -103,8 +103,6 @@ def move(distance, pause=2000):
     """
     # Move the robot straight for the given distance.
     robot.straight(distance)
-
-    wait(pause)
 
 
 
@@ -175,8 +173,6 @@ def main():
     # Raise the extension
     lift_motor.reset_angle(0)
     lift_motor.run_target(100, 110)
-
-
 
     # Step 6: Reverse and move back to starting position.
     # Reverse

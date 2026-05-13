@@ -101,7 +101,7 @@ def arm_down():
     Lower the arm to the DOWN position.
     Moves to -110 degrees. the motor holds this position (locked).
     """
-    lift_motor.run_target(100, -110)
+    lift_motor.run_target(100, -5)
 
 
 # --------------------------------------------------
@@ -116,17 +116,17 @@ def main():
     wait(500)
 
     # 2. Move forward 40 cm, then wait
-    move(400)
+    move(370)
     wait(300)
 
     # 3. Arm down (lock onto ground / object), then wait
     arm_down()
-    wait(500)
+
 
     # 4. Move backward 40 cm with more force
     # Temporarily increase speed & acceleration for the heavy load
-    robot.settings(straight_speed=400, straight_acceleration=500)
-    move(-400)
+    # robot.settings(straight_speed=400, straight_acceleration=500)
+    move(-370)
     wait(300)
     # Restore the default gentle drive settings
     robot.settings(straight_speed=200, straight_acceleration=200)

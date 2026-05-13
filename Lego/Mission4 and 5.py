@@ -72,7 +72,7 @@ def turbine_and_car_mission():
     move(700)
 
     # 2. Turn right 20 degrees
-    turn(-20)
+    turn(65)
 
     # 3. Do the next two steps 4 times:
     for _ in range(4):
@@ -80,22 +80,22 @@ def turbine_and_car_mission():
         move(-50)   # backward 5 cm
 
     # 4. Wait for 5 seconds
-    wait(5000)
+    wait(2000)
 
     # 5. Move backward 10 cm
-    move(-100)
+    move(-300)
 
     # 6. Turn left 90 degrees
-    turn(90)
+    turn(-110)
 
     # 7. Move forward 20 cm
-    move(200)
+    move(375)
 
     # 8. Raise arm high
     arm_up()
 
     # 9. Wait 5 seconds
-    wait(5000)
+    wait(2000)
 
     # 10. Move backward 50 cm
     move(-500)
