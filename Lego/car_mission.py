@@ -58,8 +58,8 @@ def arm_up():
 
 def arm_down():
     """Lower the arm (not used here, but available)."""
-    lift_motor.run_target(100, -110)
-    wait(500)
+    lift_motor.run_target(100, -5)
+    wait(520)
 
 # --------------------------------------------------
 # Main mission function
@@ -69,36 +69,37 @@ def turbine_and_car_mission():
     ev3.screen.draw_text(0, 50, "Turbine & Car")
 
     # 1. Move straight 70 cm (700 mm)
-    move(700)
+    move(470)
 
-    # 2. Turn right 20 degrees
-    turn(65)
+    # # 2. Turn right 20 degrees
+    # turn(46)
 
-    # 3. Do the next two steps 4 times:
-    for _ in range(4):
-        move(100)   # forward 10 cm
-        move(-50)   # backward 5 cm
+    # # 3. Do the next two steps 4 times:
+    # for _ in range(4):
+    #     move(100)   # forward 10 cm
+    #     move(-50)   # backward 5 cm
 
-    # 4. Wait for 5 seconds
-    wait(2000)
+    # # 4. Wait for 5 seconds
+    wait(200)
 
     # 5. Move backward 10 cm
-    move(-300)
+    # move(-150)
 
     # 6. Turn left 90 degrees
-    turn(-110)
+    turn(-47)
 
     # 7. Move forward 20 cm
     move(375)
 
     # 8. Raise arm high
     arm_up()
+    arm_down()
 
     # 9. Wait 5 seconds
-    wait(2000)
+    wait(200)
 
     # 10. Move backward 50 cm
-    move(-500)
+    move(-700)
 
     # Optional: sound to mark completion
     ev3.speaker.beep(1000, 300)

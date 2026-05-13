@@ -16,7 +16,7 @@ The robot will:
 7. Play a short celebration sound.
 
 """
-from pybricks.ev3devices import Motor
+from pybricks.ev3devices import Motor, TouchSensor
 from pybricks.parameters import Port
 
 lift_motor = Motor(Port.A)
@@ -58,6 +58,10 @@ left_motor = Motor(Port.B)
 # Create the motor object for the right wheel.
 # This motor is connected to output port C.
 right_motor = Motor(Port.C)
+
+# Initialize the Touch Sensor on Port 1. 
+# The Touch Sensor is a simple digital switch that returns True when pressed.
+touch = TouchSensor(Port.S1)
 
 
 # --------------------------------------------------
@@ -143,33 +147,36 @@ def main():
     point.
     """
 
+    lift_motor.reset_angle(0)
+    lift_motor.run_target(100, 110)
+
     # Step 1:
     # Move forward 180 mm(18 cm) from the starting point.
-    move(180)
+    move(300)
 
     # Step 2:
     # Turn left 50 degrees.
-    # In Pybricks, a negative angle means a right turn.
-    turn(50)
+    # In Pybricks, a negative angle means a left turn.
+    turn(-30)
 
     # Move forward 100 mm(10 cm).
-    move(100)
+    move(170)
 
     # Step 3:
     # Turn 90 degrees to the right.
-    turn(-90)
+    turn(90)
 
     # Step 4:
     # Move forward 280 mm(28 cm).
-    move(280)
+    move(625)
 
 
     # Turn 90 degrees to the left.
-    turn(90)
+    turn(-90)
 
     # Step 5:
     #Lower the extension
-    lift_motor.run_target(100, -110)
+    lift_motor.run_target(100, -5)
     # Raise the extension
     lift_motor.reset_angle(0)
     lift_motor.run_target(100, 110)
@@ -178,17 +185,50 @@ def main():
     # Reverse
     move(-70)
     # Turn to the left
-    turn(90)
+    turn(-90)
     # Move forward 250mm(25 cm) to return to the original starting position.
-    move(250)
+    move(610)
     # Turn to the left
-    turn(90)
+    turn(-90)
     # Move forward for a couple of centimeters
-    move(100)
+    move(170)
     # Take a short curve to the right
-    turn(-50)
-    # Move forward
-    move(180)
+    turn(30)
+    # # Move forward
+    # move(180)
+
+    while True:
+    
+    # Command the robot to drive forward indefinitely at 200 mm/s with 0 steering.
+    # Because this is inside a while loop, it keeps refreshing the command.
+        robot.drive(200, 0)
+
+    # Poll the touch sensor. The .pressed() method returns a boolean (True/False).
+        if touch.pressed():
+        
+        # Immediate reaction: Stop the motors to prevent pushing into the obstacle.
+            robot.stop()
+
+        # Output to the console for debugging purposes.
+            print("Touch pressed! Obstacle detected.")
+
+        
+            wait(1500)
+
+            # Step 7:
+            # Play the celebration sound to indicate the routine is complete.
+            celebrate()
+
+
+        # ---------------------------------
+        # STATE MANAGEMENT (DEBOUNCING)
+        # ---------------------------------
+        # 🔥 CRITICAL: If the robot backed up but the sensor is somehow STILL pressed 
+        # (e.g., it got snagged, or a user is holding it), the loop would immediately 
+        # trigger again. This nested while loop acts as a block, pausing the main 
+        # program flow until the physical button is explicitly released.
+        while touch.pressed():
+            wait(10) # Check every 10ms, do nothing until False.
 
 
     # Step 7:
