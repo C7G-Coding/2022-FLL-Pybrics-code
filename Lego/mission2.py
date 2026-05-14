@@ -1,64 +1,119 @@
 #!/usr/bin/env pybricks-micropython
 
 """
-Line Follower – Stay on Black (Port S3)
-========================================
-Calibrates the colour sensor on the black line,
-then follows the black line (not the edge) by steering
-back toward black whenever the sensor sees white.
-
-Built from the custom movement routine structure.
+Mission 3 – Line Following with Live Proof
+===========================================
+Shows sensor readings (R/E/S) on the EV3 screen
+so you can SEE the robot follow the black line.
 """
 
-# --------------------------------------------------
-# Imports (same style as your original)
-# --------------------------------------------------
-from pybricks.ev3devices import Motor, ColorSensor
-from pybricks.parameters import Port
-
-# Lift motor (if used later)
-lift_motor = Motor(Port.A)
-
 from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import Motor
+from pybricks.ev3devices import Motor, ColorSensor
 from pybricks.parameters import Port
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait
 
 # --------------------------------------------------
-# Device setup
+# Hardware
 # --------------------------------------------------
 ev3 = EV3Brick()
 
 left_motor  = Motor(Port.B)
 right_motor = Motor(Port.C)
+lift_motor  = Motor(Port.A)          # Arm motor
 
-# Colour sensor on Port S3
-color_sensor = ColorSensor(Port.S3)
+line_sensor = ColorSensor(Port.S3)   # Colour sensor
 
-# --------------------------------------------------
-# Robot measurements
-# --------------------------------------------------
-wheel_diameter = 56
-axle_track = 123
-
-robot = DriveBase(left_motor, right_motor, wheel_diameter, axle_track)
+robot = DriveBase(left_motor, right_motor, wheel_diameter=56, axle_track=121)
 robot.settings(straight_speed=200, turn_rate=90)
 
 # --------------------------------------------------
-# Helper functions (your original style)
+# Global calibration value
+# --------------------------------------------------
+TARGET_THRESHOLD = 50
+
+# --------------------------------------------------
+# Calibration (exactly like your demo)
+# --------------------------------------------------
+def calibrate():
+    global TARGET_THRESHOLD
+
+    ev3.screen.clear()
+    ev3.screen.draw_text(0, 20, "Place on BLACK")
+    ev3.screen.draw_text(0, 50, "Press any btn")
+
+    while len(ev3.buttons.pressed()) == 0:
+        wait(10)
+    black_value = line_sensor.reflection()
+    ev3.speaker.beep(500, 200)
+
+    while len(ev3.buttons.pressed()) > 0:
+        wait(10)
+
+    ev3.screen.clear()
+    ev3.screen.draw_text(0, 20, "Place on WHITE")
+    ev3.screen.draw_text(0, 50, "Press any btn")
+
+    while len(ev3.buttons.pressed()) == 0:
+        wait(10)
+    white_value = line_sensor.reflection()
+    ev3.speaker.beep(1000, 200)
+
+    while len(ev3.buttons.pressed()) > 0:
+        wait(10)
+
+    TARGET_THRESHOLD = (black_value + white_value) / 2
+
+    ev3.screen.clear()
+    ev3.screen.draw_text(0, 10, "Blk: " + str(black_value))
+    ev3.screen.draw_text(0, 30, "Wht: " + str(white_value))
+    ev3.screen.draw_text(0, 60, "Thr: " + str(TARGET_THRESHOLD))
+    wait(2000)
+
+# --------------------------------------------------
+# Line follower with live proof on screen
+# --------------------------------------------------
+def line_follow(distance_mm):
+    DRIVE_SPEED = 100
+    PROPORTIONAL_GAIN = 1.2
+    STEERING_DIRECTION = -1    # Change to 1 if the robot turns the wrong way
+
+    travelled = 0
+    robot.reset()
+
+    while travelled < distance_mm:
+        # Read sensor
+        current = line_sensor.reflection()
+        # Error = how far we are from the edge
+        error = current - TARGET_THRESHOLD
+        # Steering correction
+        steer = error * PROPORTIONAL_GAIN * STEERING_DIRECTION
+
+        # ---- LIVE DEBUG SCREEN (proof that sensor is in control) ----
+        ev3.screen.clear()
+        ev3.screen.draw_text(0,  0, "R:" + str(current))    # raw reflection
+        ev3.screen.draw_text(0, 20, "E:" + str(error))      # error
+        ev3.screen.draw_text(0, 40, "S:" + str(steer))      # steering command
+        ev3.screen.draw_text(0, 60, "D:" + str(travelled))  # distance so far
+
+        # Apply steering
+        robot.drive(DRIVE_SPEED, steer)
+        travelled = robot.distance()
+        wait(10)
+
+    robot.stop()
+    ev3.screen.clear()
+    ev3.screen.draw_text(0, 40, "Segment done")
+    wait(500)
+
+# --------------------------------------------------
+# Basic moves
 # --------------------------------------------------
 def move(distance):
     robot.straight(distance)
-    print("Moving", distance, "mm")
 
 def turn(angle):
     robot.turn(angle)
-    print("Turning", angle, "degrees")
-
-def pause(ms=2000):
-    wait(ms)
-    print("Pausing", ms, "milliseconds")
 
 def celebrate():
     ev3.speaker.beep()
@@ -69,77 +124,57 @@ def celebrate():
     ev3.speaker.beep()
 
 # --------------------------------------------------
-# Calibration – record the black line value
+# Arm helpers
 # --------------------------------------------------
-def calibrate_black():
-    global BLACK_THRESHOLD
-    ev3.screen.clear()
-    ev3.screen.draw_text(0, 20, "Place on BLACK LINE")
-    ev3.screen.draw_text(0, 50, "Press any btn")
-
-    while len(ev3.buttons.pressed()) == 0:
-        wait(10)
-    black_value = color_sensor.reflection()
-    ev3.speaker.beep(500, 200)
-
-    while len(ev3.buttons.pressed()) > 0:
-        wait(10)
-
-    # Set threshold just above the black reading
-    # so we can tell when we drift onto white.
-    BLACK_THRESHOLD = black_value + 15   # 15 gives a safe margin
-    ev3.screen.clear()
-    ev3.screen.draw_text(0, 20, "Black: " + str(black_value))
-    ev3.screen.draw_text(0, 50, "Thr : " + str(BLACK_THRESHOLD))
-    wait(2000)
-
-# --------------------------------------------------
-# Line follower – stay ON BLACK (not edge)
-# --------------------------------------------------
-def line_follow_black(distance_mm):
-    """
-    Drive forward while keeping the sensor over the black line.
-    - If reflection < BLACK_THRESHOLD → we're on black → go straight.
-    - If reflection >= BLACK_THRESHOLD → we're on white → turn left to find black.
-    """
-    DRIVE_SPEED = 100          # mm/s
-    SEEK_TURN_RATE = 40        # deg/s, turn left to search for black
-
-    travelled = 0
-    robot.reset()
-
-    while travelled < distance_mm:
-        current = color_sensor.reflection()
-        if current < BLACK_THRESHOLD:
-            # On black – drive straight
-            robot.drive(DRIVE_SPEED, 0)
-        else:
-            # On white – turn left to get back to black
-            robot.drive(DRIVE_SPEED, SEEK_TURN_RATE)
-
-        travelled = robot.distance()
-        wait(10)
-
-    robot.stop()
-
-# --------------------------------------------------
-# Main mission (example: follow line for 50 cm, turn, etc.)
-# --------------------------------------------------
-def main():
-    calibrate_black()
-
-    # Optional arm up
+def arm_up():
     lift_motor.reset_angle(0)
     lift_motor.run_target(100, 110)
+    wait(500)
 
-    # Follow the black line for 500 mm (50 cm)
-    line_follow_black(500)
+def arm_down():
+    lift_motor.run_target(100, -110)
+    wait(500)
 
-    # Celebrate when done
+# --------------------------------------------------
+# Main mission
+# --------------------------------------------------
+def main():
+    calibrate()
+
+    ev3.screen.clear()
+    ev3.screen.draw_text(0, 50, "Mission 3 Running...")
+    wait(500)
+
+    # 1. Forward 180 mm on line (watch the screen!)
+    line_follow(180)
+
+    # 2. Turn left 50°, then 100 mm on line
+    turn(50)
+    line_follow(100)
+
+    # 3. Turn right 90°, then 280 mm on line
+    turn(-90)
+    line_follow(280)
+
+    # 4. Turn right 270° (big turn)
+    turn(-270)
+
+    # 5. Arm: open, wait, close
+    arm_down()
+    wait(300)
+    arm_up()
+    wait(300)
+
+    # 6. Turn right 50°, then 250 mm on line
+    turn(-50)
+    line_follow(250)
+
+    # 7. Turn right 90°, then 400 mm on line
+    turn(-90)
+    line_follow(400)
+
+    # 8. Celebrate
     celebrate()
 
-# --------------------------------------------------
-# Run the program
-# --------------------------------------------------
 if __name__ == "__main__":
     main()
