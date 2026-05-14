@@ -1,55 +1,106 @@
 #!/usr/bin/env pybricks-micropython
-# arm must start down
-"""
-Custom movement routine with line following
-============================================
-Now uses a color sensor to stay on a black line while driving
-straight forward and on the return journey.
-"""
 
-from pybricks.ev3devices import Motor
-from pybricks.parameters import Port
+"""
+Mission 3 – Corrected line follower with live debug
+====================================================
+- Calibrates the colour sensor on the real mat.
+- Follows the left edge of a black line using proportional control.
+- Live EV3 screen shows sensor readings – you can watch the robot react.
+- Arm (Port A) used for attachment: down = open, up = close.
 
-lift_motor = Motor(Port.A)
+Path (same as before):
+ 1. Forward 180 mm on line
+ 2. Left 50°, forward 100 mm
+ 3. Right 90°, forward 280 mm on line
+ 4. Right 270°
+ 5. Lower arm (open), wait, raise arm (close) → secure items
+ 6. Right 50°, forward 250 mm on line
+ 7. Right 90°, forward 400 mm on line
+ 8. Celebrate
+"""
 
 from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import Motor
+from pybricks.ev3devices import Motor, ColorSensor
 from pybricks.parameters import Port
 from pybricks.robotics import DriveBase
 from pybricks.tools import wait
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#  NEW – import the colour sensor
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-from pybricks.ev3devices import ColorSensor
-
 # --------------------------------------------------
-# Device setup (updated with colour sensor)
+# Hardware setup
 # --------------------------------------------------
-
 ev3 = EV3Brick()
 
 left_motor  = Motor(Port.B)
 right_motor = Motor(Port.C)
+lift_motor  = Motor(Port.A)            # Arm attachment
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#  NEW – colour sensor on port S1 (change if yours is on S2, S3 …)
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-color_sensor = ColorSensor(Port.S3)
+line_sensor = ColorSensor(Port.S3)     # Colour sensor – adjust port if needed
 
-# Robot measurements
-wheel_diameter = 56
-axle_track = 123
-
-robot = DriveBase(left_motor, right_motor, wheel_diameter, axle_track)
+# Robot dimensions (adjust if your robot is different)
+robot = DriveBase(left_motor, right_motor, wheel_diameter=56, axle_track=121)
 robot.settings(straight_speed=200, turn_rate=90)
 
 # --------------------------------------------------
-# Helper functions (original ones kept, plus a NEW line follower)
+# Global calibration values (set during calibration)
 # --------------------------------------------------
+TARGET_THRESHOLD = 50
+PROPORTIONAL_GAIN = 1.8           # increased for a clear reaction
+STEERING_SIGN    = 1.0            # change to -1.0 if the robot turns the wrong way
 
+DEBUG = True                      # Set to False to disable screen output
+
+# --------------------------------------------------
+# Calibration function
+# --------------------------------------------------
+def calibrate_sensor():
+    global TARGET_THRESHOLD
+
+    ev3.screen.clear()
+    ev3.screen.draw_text(0, 20, "Place on BLACK")
+    ev3.screen.draw_text(0, 50, "Press any btn")
+
+    while len(ev3.buttons.pressed()) == 0:
+        wait(10)
+    black_value = line_sensor.reflection()
+    ev3.speaker.beep(500, 200)
+
+    while len(ev3.buttons.pressed()) > 0:
+        wait(10)
+
+    ev3.screen.clear()
+    ev3.screen.draw_text(0, 20, "Place on WHITE")
+    ev3.screen.draw_text(0, 50, "Press any btn")
+
+    while len(ev3.buttons.pressed()) == 0:
+        wait(10)
+    white_value = line_sensor.reflection()
+    ev3.speaker.beep(1000, 200)
+
+    while len(ev3.buttons.pressed()) > 0:
+        wait(10)
+
+    TARGET_THRESHOLD = (black_value + white_value) / 2
+
+    # Show calibration results
+    ev3.screen.clear()
+    ev3.screen.draw_text(0, 10, "Blk: " + str(black_value))
+    ev3.screen.draw_text(0, 30, "Wht: " + str(white_value))
+    ev3.screen.draw_text(0, 60, "Thr: " + str(TARGET_THRESHOLD))
+    wait(2000)
+
+    # Safety check: if black and white are almost the same, abort
+    if abs(black_value - white_value) < 10:
+        ev3.screen.clear()
+        ev3.screen.draw_text(0, 20, "Sensor error!")
+        ev3.screen.draw_text(0, 40, "Check position / lighting")
+        while True:
+            ev3.speaker.beep(200, 200)
+            wait(2000)
+
+# --------------------------------------------------
+# Movement helpers
+# --------------------------------------------------
 def move(distance):
-    """Simple straight move – no line following."""
     robot.straight(distance)
 
 def turn(angle):
@@ -63,117 +114,93 @@ def celebrate():
     wait(100)
     ev3.speaker.beep()
 
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#  NEW – line following function
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def line_follow(distance_mm):
-    """
-    Drive forward for **distance_mm** while keeping the robot
-    centered on a black line.
-
-    - The sensor should be mounted between the wheels, pointing down.
-    - Black gives a low reflection (e.g. <20), white gives a high value (e.g. >60).
-    - Adjust THRESHOLD and PROPORTIONAL_GAIN to match your mat and lighting.
-    """
-
-    # Threshold between black and white (calibrate for your environment)
-    THRESHOLD = 40          # reflection value: <40 = black, >40 = white
-    PROPORTIONAL_GAIN = 1.2 # how strongly to steer (tune this!)
-
-    base_speed = 150                # mm/s – forward speed while line following
-    distance_travelled = 0          # keep track for stopping
-
-    # Reset the drivebase distance counter
-    robot.reset()
-
-    while distance_travelled < distance_mm:
-        # Read reflected light intensity (0–100)
-        reflection = color_sensor.reflection()
-
-        # Calculate error: how far from the threshold we are
-        error = reflection - THRESHOLD
-
-        # Turn rate = proportional gain * error
-        # (negative error → turn left to find black, positive → turn right)
-        steer = PROPORTIONAL_GAIN * error
-
-        # Drive with forward speed and calculated steer
-        robot.drive(base_speed, steer)
-
-        # Update how far we've gone (in mm)
-        distance_travelled = robot.distance()
-
-        # Small pause so the loop doesn't run too fast (10 ms is fine)
-        wait(10)
-
-    # Stop smoothly
-    robot.stop()
-
-
 # --------------------------------------------------
-# Main routine – now uses line_follow()
+# Arm helpers
 # --------------------------------------------------
-
-def main():
-    ev3.screen.clear()
-
-    # Step 1: Move forward 180 mm WHILE FOLLOWING THE BLACK LINE
-    line_follow(180)
-
-    # Step 2: Turn left 50° (no line, so use normal turn)
-    # turn(50)
-    turn(30)
-
-    # Move forward 100 mm – still on a line? If yes, use line_follow(100)
-    # move(100)                
-    line_follow(120)
-
-    # Step 3: Turn right 90°
-    turn(-90)
-
-    # Step 4: Move forward 280 mm – if on a line, use 
-    line_follow(280)
-    # move(280)                 
-
-    # Turn left 90°
-    turn(90)
-
-    #Get closer to mission2
-    move(30)
-
-    # Step 5: Lower arm
-    lift_motor.run_target(100, -110)
-
-    # Step 6: Reverse
-    move(-30)
+def arm_up():
+    lift_motor.reset_angle(0)
+    lift_motor.run_target(100, 110)    # up / close
     wait(500)
 
-    #Raise arm
-    lift_motor.reset_angle(0)
-    lift_motor.run_target(100, 110)
+def arm_down():
+    lift_motor.run_target(100, -110)   # down / open
+    wait(500)
 
+# --------------------------------------------------
+# Line follower – corrected and clearly reacting
+# --------------------------------------------------
+def line_follow(distance_mm):
+    """
+    Follow the black line for a given distance.
+    - Uses the calibrated TARGET_THRESHOLD.
+    - Shows live sensor data on the EV3 screen (if DEBUG is True).
+    """
+    DRIVE_SPEED = 80                     # slightly slower for better control
+    travelled = 0
+    robot.reset()
 
-    # Return (now also using line following)
-    # Reverse 70 mm (no line, so move works)
-    move(-70)
+    while travelled < distance_mm:
+        current = line_sensor.reflection()
+        error = current - TARGET_THRESHOLD
+        steer = error * PROPORTIONAL_GAIN * STEERING_SIGN
 
-    turn(90)
+        # ---- LIVE DEBUG ON SCREEN ----
+        if DEBUG:
+            ev3.screen.clear()
+            ev3.screen.draw_text(0,  0, "R:" + str(current))        # reflection
+            ev3.screen.draw_text(0, 20, "E:" + str(error))          # error
+            ev3.screen.draw_text(0, 40, "S:" + str(steer))          # steering
+            ev3.screen.draw_text(0, 60, "D:" + str(travelled))      # distance
 
-    # Move forward 250 mm BACK along the line – use 
-    line_follow(280)
+        robot.drive(DRIVE_SPEED, steer)
+        travelled = robot.distance()
+        wait(10)
 
-    turn(90)
+    robot.stop()
+    if DEBUG:
+        ev3.screen.clear()
 
-    # move(100)                   
-    line_follow(100)
+# --------------------------------------------------
+# Main mission
+# --------------------------------------------------
+def main():
+    ev3.screen.clear()
+    calibrate_sensor()
 
-    turn(-50)
+    # Optional: after calibration, check sensor responsiveness
+    ev3.screen.clear()
+    ev3.screen.draw_text(0, 50, "Running Mission 3...")
+    wait(500)
 
-    # Final approach 180 mm on the line
+    # 1. Forward 180 mm on line
     line_follow(180)
 
-    # Play the celebration sound to indicate the routine is complete
+    # 2. Turn left 50°, then forward 100 mm (line)
+    turn(50)
+    line_follow(100)
+
+    # 3. Turn right 90°, then forward 280 mm (line)
+    turn(-90)
+    line_follow(280)
+
+    # 4. Turn right 270° (big turn)
+    turn(-270)
+
+    # 5. Open attachment, wait, close to secure
+    arm_down()
+    wait(300)
+    arm_up()
+    wait(300)
+
+    # 6. Turn right 50°, then forward 250 mm (line)
+    turn(-50)
+    line_follow(250)
+
+    # 7. Turn right 90°, then forward 400 mm (line)
+    turn(-90)
+    line_follow(400)
+
+    # 8. Celebrate
     celebrate()
 
 if __name__ == "__main__":
