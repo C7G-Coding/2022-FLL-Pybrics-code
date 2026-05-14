@@ -133,7 +133,11 @@ def main():
     lift_motor.run_target(100, 110)
 
     # Follow the black line for 500 mm (50 cm)
-    line_follow_black(500)
+    line_follow_black(600)
+    # turn(-30)
+    # line_follow_black(150)
+    # turn(90)
+    # line_follow_black(630)
 
     # Celebrate when done
     celebrate()
