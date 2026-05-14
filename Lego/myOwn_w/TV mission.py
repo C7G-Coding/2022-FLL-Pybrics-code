@@ -162,7 +162,7 @@ def main():
 
     # Step 1:
     # Move forward 180 mm(18 cm) from the starting point.
-    move(200)
+    move(150)
 
     # Step 2:
     # Turn left 90 degrees.
@@ -170,7 +170,7 @@ def main():
     turn(90)
 
     # Move forward 100 mm(10 cm).
-    move(220)
+    move(250)
 
     # Step 3:
     # Turn 90 degrees to the right.
@@ -178,17 +178,17 @@ def main():
 
     # Step 4:
     # Move forward 280 mm(28 cm).
-    move(220)
+    move(210)
 
 
     pause(200)
 
-    move(100)
-    move(-20)
+    move(50)
+    move(-200)
 
-    turn(-180)
+    # turn(-180)
 
-    move(200)
+    # move(300)
 
 
     
