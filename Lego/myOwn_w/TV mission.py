@@ -60,9 +60,6 @@ ev3 = EV3Brick()
 left_motor = Motor(Port.B)
 right_motor = Motor(Port.C)
 
-# Initialize the Touch Sensor on Port 1. 
-# The Touch Sensor is a simple digital switch that returns True when pressed.
-touch = TouchSensor(Port.S1)
 
 # Configure the DriveBase (wheel diameter 56mm, axle track 125mm)
 robot = DriveBase(left_motor, right_motor, 56, 125)
@@ -125,11 +122,11 @@ def move(distance):
     """
     # Move the robot straight for the given distance.
     robot.straight(distance)
-    print(f"Moving {distance} mm")
+   
 
 def pause(pause = 2000):
     wait(pause)
-    print(f"Pausing {pause} milliseconds")
+   
 
 
 def turn(angle):
@@ -143,7 +140,7 @@ def turn(angle):
     """
     # Turn the robot by the given angle.
     robot.turn(angle)
-    print(f"Turning {angle} degrees")
+   
 
 
 def celebrate():
@@ -165,7 +162,7 @@ def main():
 
     # Step 1:
     # Move forward 180 mm(18 cm) from the starting point.
-    move(100)
+    move(200)
 
     # Step 2:
     # Turn left 90 degrees.
@@ -173,7 +170,7 @@ def main():
     turn(90)
 
     # Move forward 100 mm(10 cm).
-    move(100)
+    move(220)
 
     # Step 3:
     # Turn 90 degrees to the right.
@@ -181,52 +178,17 @@ def main():
 
     # Step 4:
     # Move forward 280 mm(28 cm).
-    move(250)
+    move(220)
 
 
     pause(200)
 
-    move(50)
+    move(100)
     move(-20)
 
     turn(-180)
 
-    # move(200)
-
-    
-    while True:
-    
-    # Command the robot to drive forward indefinitely at 200 mm/s with 0 steering.
-    # Because this is inside a while loop, it keeps refreshing the command.
-        robot.drive(200, 0)
-
-    # Poll the touch sensor. The .pressed() method returns a boolean (True/False).
-        if touch.pressed():
-        
-        # Immediate reaction: Stop the motors to prevent pushing into the obstacle.
-            robot.stop()
-
-        # Output to the console for debugging purposes.
-            print("Touch pressed! Obstacle detected.")
-
-        
-            wait(1500)
-
-            # Step 7:
-            # Play the celebration sound to indicate the routine is complete.
-            celebrate()
-
-
-        # ---------------------------------
-        # STATE MANAGEMENT (DEBOUNCING)
-        # ---------------------------------
-        # 🔥 CRITICAL: If the robot backed up but the sensor is somehow STILL pressed 
-        # (e.g., it got snagged, or a user is holding it), the loop would immediately 
-        # trigger again. This nested while loop acts as a block, pausing the main 
-        # program flow until the physical button is explicitly released.
-        while touch.pressed():
-            wait(10) # Check every 10ms, do nothing until False.
-    
+    move(200)
 
 
     
