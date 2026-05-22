@@ -139,8 +139,9 @@ def main():
 
     move(-300)
 
-    turn(-180)
+    turn(180)
 
+    move(50)
     # Start an infinite loop.
     # The robot will keep checking the distance until we explicitly
     # break out of the loop.
@@ -156,46 +157,14 @@ def main():
 
         # Check whether the detected object is within the safe distance.
         if distance <= SAFE_DISTANCE:
-            turn(-20)
-            move(200)
-           
-           
-
             # Play a beep sound to indicate that an object has been detected.
             ev3.speaker.beep()
+             # Print a message to the console for clarity.
+            print("Object detected. Let's gooo.")
+            turn(-20)
+            move(200)
 
-            # Print a message to the console for clarity.
-            print("Object detected. Stopping.")
-
-            # Wait for 1 second before reversing.
-            # 1000 milliseconds = 1 second.
-            wait(1000)
-
-            # Move the robot backward by the specified reverse distance.
-            # A negative value means backward movement.
-            robot.straight(-REVERSE_DISTANCE)
-
-            # Play another beep to indicate that the reverse action is complete.
-            ev3.speaker.beep()
-
-            # Print a final message.
-            print("Reversed away from object.")
-
-            # Break out of the loop so that the program can end.
             break
-
-        # If no object is within the safe distance, keep driving forward.
-        # The first argument is forward speed in mm/s.
-        # The second argument is turn rate. A value of 0 means drive straight.
-        robot.drive(DRIVE_SPEED, 0)
-
-        # Pause briefly before taking the next sensor reading.
-        # This small delay makes the loop easier to manage and prevents
-        # it from running unnecessarily fast.
-        wait(100)
-
-    # Stop the robot at the end of the program to ensure it is no longer moving.
-    robot.stop()
 
     # Print a final completion message.
     print("Demo complete.")
