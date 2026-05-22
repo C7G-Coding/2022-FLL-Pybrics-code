@@ -82,7 +82,7 @@ ultrasonic = UltrasonicSensor(Port.S2)
 # SAFE_DISTANCE is the distance at which the robot must stop.
 # The ultrasonic sensor returns distance in millimetres.
 # 200 mm = 20 cm.
-SAFE_DISTANCE = 100
+SAFE_DISTANCE = 200
 
 # DRIVE_SPEED is the forward speed of the robot in millimetres per second.
 DRIVE_SPEED = 120
@@ -145,13 +145,13 @@ def main():
     # Make a beep sound at the start of the program so that the user
     # knows the robot is about to begin.
     ev3.speaker.beep()
-
+    
     # Print an introductory message to the console.
     # This is useful when the program is run from VS Code because it
     # helps the user understand what the program is doing.
     print("Ultrasonic sensor demo starting...")
     print("Robot will drive forward until an object is closer than 200 mm.")
-    move(150)
+    move(170)
     turn(-45)
     # Start an infinite loop.
     # The robot will keep checking the distance until we explicitly
@@ -182,17 +182,17 @@ def main():
             # 1000 milliseconds = 1 second.
             wait(1000)
 
-            # Move the robot backward by the specified reverse distance.
-            # A negative value means backward movement.
-            robot.straight(-REVERSE_DISTANCE)
+            # # Move the robot backward by the specified reverse distance.
+            # # A negative value means backward movement.
+            # robot.straight(-REVERSE_DISTANCE)
 
             # Play another beep to indicate that the reverse action is complete.
             ev3.speaker.beep()
 
-            # Print a final message.
-            print("Reversed away from object.")
+            # # Print a final message.
+            # print("Reversed away from object.")
 
-            # Break out of the loop so that the program can end.
+            # Break out of the loop so that the program can end3.
             break
 
         # If no object is within the safe distance, keep driving forward.
@@ -208,8 +208,10 @@ def main():
     # Stop the robot at the end of the program to ensure it is no longer moving.
     robot.stop()
 
-    # Print a final completion message.
-    print("Demo complete.")
+    arm_down()
+    arm_up()
+    move(-100)
+
 
 
 # This condition checks whether this file is being run directly.
