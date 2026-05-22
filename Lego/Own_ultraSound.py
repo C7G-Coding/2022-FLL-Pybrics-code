@@ -82,7 +82,7 @@ ultrasonic = UltrasonicSensor(Port.S2)
 # SAFE_DISTANCE is the distance at which the robot must stop.
 # The ultrasonic sensor returns distance in millimetres.
 # 200 mm = 20 cm.
-SAFE_DISTANCE = 200
+SAFE_DISTANCE = 100
 
 # DRIVE_SPEED is the forward speed of the robot in millimetres per second.
 DRIVE_SPEED = 120
@@ -116,12 +116,12 @@ def turn(angle):
 def arm_up():
     """Raise the arm to its high position."""
     lift_motor.reset_angle(0)
-    lift_motor.run_target(100, 110)   # Up angle (adjust if needed)
+    lift_motor.run_target(100, 5)   # Up angle (adjust if needed)
     wait(500)
 
 def arm_down():
     """Lower the arm (not used here, but available)."""
-    lift_motor.run_target(100, -5)
+    lift_motor.run_target(100, -2)
     wait(520)
 
 def main():
@@ -151,7 +151,7 @@ def main():
     # helps the user understand what the program is doing.
     print("Ultrasonic sensor demo starting...")
     print("Robot will drive forward until an object is closer than 200 mm.")
-    move(170)
+    move(180)
     turn(-45)
     # Start an infinite loop.
     # The robot will keep checking the distance until we explicitly
