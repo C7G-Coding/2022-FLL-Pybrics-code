@@ -204,6 +204,7 @@ def main():
             
             # Immediate reaction: Stop the motors to prevent pushing into the obstacle.
             robot.stop()
+
             break
 
             # Output to the console for debugging purposes.
@@ -246,9 +247,9 @@ def main():
             while touch.pressed():
                 wait(10) # Check every 10ms, do nothing until False.
 
+    wait(100)
+    move(30)
     
-    # move(300)
-
 
     
 

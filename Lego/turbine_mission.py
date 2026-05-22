@@ -97,7 +97,7 @@ def turbine_and_car_mission():
 
     # 3. Do the next two steps 4 times:
     for _ in range(4):
-        move(100)   # forward 10 cm
+        move(130)   # forward 10 cm
         move(-50)   # backward 5 cm
 
     # 4. Wait for 5 seconds
@@ -108,62 +108,65 @@ def turbine_and_car_mission():
 
     # 6. Turn left 90 degrees
    
-    move(-600)
+    move(-700)
 
-while True:
-    
-    # Command the robot to drive forward indefinitely at 200 mm/s with 0 steering.
-    # Because this is inside a while loop, it keeps refreshing the command.
-    robot.drive(200, 0)
+    while True:
+            
+            # Command the robot to drive forward indefinitely at 200 mm/s with 0 steering.
+            # Because this is inside a while loop, it keeps refreshing the command.
+            robot.drive(-200, 0)
 
-    # Poll the touch sensor. The .pressed() method returns a boolean (True/False).
-    if touch.pressed():
-        
-        # Immediate reaction: Stop the motors to prevent pushing into the obstacle.
-        robot.stop()
 
-        # Output to the console for debugging purposes.
-        print("Touch pressed! Obstacle detected.")
+            # Poll the touch sensor. The .pressed() method returns a boolean (True/False).
+            if touch.pressed():
+                
+                # Immediate reaction: Stop the motors to prevent pushing into the obstacle.
+                robot.stop()
 
-        # ---------------------------------
-        # EXCEPTION HANDLING
-        # ---------------------------------
-        # Attempt to play a specific audio file. If the file "oopsy.wav" is missing 
-        # from the EV3's file system, the program would normally crash. 
-        # The try/except block catches this FileNotFoundError and safely defaults 
-        # to a standard beep, keeping the robot operational.
-        try:
-             ev3.speaker.play_file("oopsy.wav")
-        except:
-            ev3.speaker.beep()
+                break
 
-        # Wait 1.5 seconds (1500 ms) to let the sound finish playing
-        wait(1500)
+                # Output to the console for debugging purposes.
+                print("Touch pressed! Obstacle detected.")
 
-        # ---------------------------------
-        # EVASIVE MANEUVER
-        # ---------------------------------
-        # Move backwards by 100 millimeters to clear the obstacle
-        robot.straight(-100)
+                # ---------------------------------
+                # EXCEPTION HANDLING
+                # ---------------------------------
+                # Attempt to play a specific audio file. If the file "oopsy.wav" is missing 
+                # from the EV3's file system, the program would normally crash. 
+                # The try/except block catches this FileNotFoundError and safely defaults 
+                # to a standard beep, keeping the robot operational.
+                try:
+                    ev3.speaker.play_file("oopsy.wav")
+                except:
+                    ev3.speaker.beep()
 
-        # # Turn 180 degrees to face the opposite direction
-        # robot.turn(180)
+                # Wait 1.5 seconds (1500 ms) to let the sound finish playing
+                wait(1500)
 
-        # # Brief pause to allow momentum to settle after turning
-        # wait(500)
+                # ---------------------------------
+                # EVASIVE MANEUVER
+                # ---------------------------------
+                # Move backwards by 100 millimeters to clear the obstacle
+                robot.straight(-100)
 
-        # # ---------------------------------
-        # # STATE MANAGEMENT (DEBOUNCING)
-        # # ---------------------------------
-        # # 🔥 CRITICAL: If the robot backed up but the sensor is somehow STILL pressed 
-        # # (e.g., it got snagged, or a user is holding it), the loop would immediately 
-        # # trigger again. This nested while loop acts as a block, pausing the main 
-        # # program flow until the physical button is explicitly released.
-        # while touch.pressed():
-        #     wait(10) # Check every 10ms, do nothing until False.
-    # Optional: sound to mark completion
-    ev3.speaker.beep(1000, 300)
-    ev3.screen.clear()
+                # Turn 180 degrees to face the opposite direction
+                robot.turn(180)
+
+                # Brief pause to allow momentum to settle after turning
+                wait(500)
+
+                # ---------------------------------
+                # STATE MANAGEMENT (DEBOUNCING)
+                # ---------------------------------
+                # 🔥 CRITICAL: If the robot backed up but the sensor is somehow STILL pressed 
+                # (e.g., it got snagged, or a user is holding it), the loop would immediately 
+                # trigger again. This nested while loop acts as a block, pausing the main 
+                # program flow until the physical button is explicitly released.
+                while touch.pressed():
+                    wait(10) # Check every 10ms, do nothing until False.
+
+    wait(100)
+    move(30)
 
 # --------------------------------------------------
 # Run the mission when the file is executed

@@ -26,6 +26,62 @@ from pybricks.tools import wait
 # --------------------------------------------------
 # Hardware setup
 # --------------------------------------------------
+
+# Import the EV3Brick class.
+# This gives us access to the EV3 brick itself, including features such
+# as the speaker, buttons, and screen.
+from pybricks.hubs import EV3Brick
+
+# Import the Motor class so that we can create motor objects for the
+# left and right wheels of the robot.
+# Import the UltrasonicSensor class so that we can create an object
+# representing the ultrasonic sensor connected to the EV3.
+from pybricks.ev3devices import Motor, UltrasonicSensor
+
+# Import Port so that we can refer to the physical ports on the EV3
+# brick, such as motor ports B and C, and sensor port S4.
+from pybricks.parameters import Port
+
+# Import DriveBase, which makes it easier to control a two-wheel robot.
+# Instead of controlling each motor separately all the time, we can use
+# higher-level movement commands such as drive(), straight(), and turn().
+from pybricks.robotics import DriveBase
+
+# Import wait so that we can pause the program for a specified number
+# of milliseconds. This is useful when we want the robot to stop briefly
+# before continuing with the next action.
+from pybricks.tools import wait
+
+
+# Create an EV3Brick object.
+# This represents the EV3 brick and allows us to use built-in features
+# such as the speaker for beeps.
+ev3 = EV3Brick()
+
+# Create the motor object for the left wheel.
+# The motor is connected to Port B on the EV3.
+left_motor = Motor(Port.B)
+
+# Create the motor object for the right wheel.
+# The motor is connected to Port C on the EV3.
+right_motor = Motor(Port.C)
+
+# Create a DriveBase object.
+# A DriveBase combines the two drive motors into a robot that can move
+# forward, backward, and turn.
+#
+# wheel_diameter is the diameter of the wheels in millimetres.
+# axle_track is the distance between the centres of the two wheels.
+#
+# These measurements are important because they affect the accuracy of
+# the robot's movement.
+robot = DriveBase(left_motor, right_motor, wheel_diameter=56, axle_track=118)
+
+# Create the ultrasonic sensor object.
+# This tells the program that an ultrasonic sensor is connected to
+# sensor Port S4.
+ultrasonic = UltrasonicSensor(Port.S2)
+
 ev3 = EV3Brick()
 
 left_motor  = Motor(Port.B)
@@ -89,7 +145,7 @@ def turbine_and_car_mission():
     turn(-47)
 
     # 7. Move forward 20 cm
-    move(375)
+    move(380)
 
     # 8. Raise arm high
     arm_up()

@@ -89,7 +89,7 @@ def main():
     move(100)
 
     # 2. Turn left 50° (gyro accurate)
-    turn(50)
+    turn(-50)
 
     # 3. Move forward until extremely close (≤ 30 mm)
     VERY_CLOSE = 30   # distance in mm

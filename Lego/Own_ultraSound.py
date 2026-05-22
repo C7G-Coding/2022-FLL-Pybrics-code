@@ -91,6 +91,38 @@ DRIVE_SPEED = 120
 # detects an object.
 REVERSE_DISTANCE = 100
 
+left_motor  = Motor(Port.B)
+right_motor = Motor(Port.C)
+lift_motor  = Motor(Port.A)   # Arm control
+
+# Robot measurements (adjust if needed)
+wheel_diameter = 56
+axle_track = 123               # You can use 121 if that's your exact robot
+
+robot = DriveBase(left_motor, right_motor, wheel_diameter, axle_track)
+robot.settings(straight_speed=200, turn_rate=90)
+
+# --------------------------------------------------
+# Helper functions
+# --------------------------------------------------
+def move(distance_mm):
+    """Move straight: positive = forward, negative = backward."""
+    robot.straight(distance_mm)
+
+def turn(angle):
+    """Turn in place: positive = left, negative = right."""
+    robot.turn(angle)
+
+def arm_up():
+    """Raise the arm to its high position."""
+    lift_motor.reset_angle(0)
+    lift_motor.run_target(100, 110)   # Up angle (adjust if needed)
+    wait(500)
+
+def arm_down():
+    """Lower the arm (not used here, but available)."""
+    lift_motor.run_target(100, -5)
+    wait(520)
 
 def main():
     """
@@ -119,7 +151,8 @@ def main():
     # helps the user understand what the program is doing.
     print("Ultrasonic sensor demo starting...")
     print("Robot will drive forward until an object is closer than 200 mm.")
-
+    move(150)
+    turn(-45)
     # Start an infinite loop.
     # The robot will keep checking the distance until we explicitly
     # break out of the loop.
