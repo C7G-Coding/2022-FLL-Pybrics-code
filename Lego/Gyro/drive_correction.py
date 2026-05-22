@@ -42,7 +42,7 @@ left_motor = Motor(Port.B)
 right_motor = Motor(Port.C)
 
 # Initialise the Gyro sensor on port 4.
-gyro = GyroSensor(Port.S4)
+gyro = GyroSensor(Port.S)
 
 # Configure the DriveBase. 
 # Parameters: left_motor, right_motor, wheel_diameter (mm), axle_track (mm)
