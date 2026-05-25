@@ -118,7 +118,7 @@ wait(500)
 robot.reset()
 
 # === Segment 2: Drive another 300mm while following line ===
-while robot.distance() < 650:
+while robot.distance() < 600:
     current_reflection = line_sensor.reflection()
     error = current_reflection - TARGET_THRESHOLD
     steering = error * PROPORTIONAL_GAIN
@@ -135,15 +135,17 @@ robot.reset()
 
 # Just drive straight without using the sensor
 
-lift_motor.run_target(200, 45) #raise arm
-move(15)
-lift_motor.run_target(200, -5) #lower arm
-move(-10)
-lift_motor.run_target(200, 45) #raise arm
+lift_motor.run_target(200, 40) #raise arm
+move(40)
+wait(100)
+lift_motor.run_target(100, -10) #lower arm
+move(-25)
+wait(100)
+lift_motor.run_target(200, 40) #raise arm
 robot.turn(90)
-move(370)
-robot.turn(50)
-move(370)
+move(400)
+robot.turn(45)
+move(550)
 
 # Stop at the end
 robot.stop()

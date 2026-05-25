@@ -60,7 +60,7 @@ ultrasonic = UltrasonicSensor(Port.S2)
 # SAFE_DISTANCE is the distance at which the robot must stop.
 # The ultrasonic sensor returns distance in millimetres.
 # 200 mm = 20 cm.
-SAFE_DISTANCE = 150
+SAFE_DISTANCE = 50
 
 # DRIVE_SPEED is the forward speed of the robot in millimetres per second.
 DRIVE_SPEED = 120
@@ -123,24 +123,31 @@ def main():
  
     ev3.speaker.beep()
 
-    move(470)
+    move(500)
 
     wait(200)
-    turn(-47)
-    move(380)
+    turn(-45)
+    move(415)
     arm_up()
     
     wait(200)
 
-    move(-300)
+    move(-200)
 
-    turn(180)
+    turn(90)
 
-    move(50)
+    move(100)
+
+    turn (90)
+
+
+    
     # Start an infinite loop.
     # The robot will keep checking the distance until we explicitly
     # break out of the loop.
     while True:
+
+        robot.drive(100,0)
 
         # Read the current distance measured by the ultrasonic sensor.
         # The value returned is in millimetres.
@@ -156,10 +163,12 @@ def main():
             ev3.speaker.beep()
              # Print a message to the console for clarity.
             print("Object detected. Let's gooo.")
-            turn(-20)
-            move(200)
-
             break
+
+    arm_down()
+    turn(20)
+    move(250)
+
 
     # Print a final completion message.
     print("Demo complete.")

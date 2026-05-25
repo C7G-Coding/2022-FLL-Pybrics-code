@@ -5,4 +5,8 @@ from pybricks.parameters import Port
 
 lift_motor = Motor(Port.A)
 
-lift_motor.run_target(100, -110)
+lift_motor.run_target(200, 40) #raise arm
+
+lift_motor.run_target(100, -5) #lower arm
+
+lift_motor.run_target(200, 40) #raise arm
