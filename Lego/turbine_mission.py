@@ -58,7 +58,7 @@ wheel_diameter = 56
 axle_track = 123               # You can use 121 if that's your exact robot
 
 robot = DriveBase(left_motor, right_motor, wheel_diameter, axle_track)
-robot.settings(straight_speed=200, turn_rate=90)
+robot.settings(straight_speed = 250, turn_rate=90)
 
 # --------------------------------------------------
 # Helper functions
@@ -97,11 +97,14 @@ def turbine_and_car_mission():
 
     # 3. Do the next two steps 4 times:
     for _ in range(4):
-        move(130)   # forward 10 cm
-        move(-50)   # backward 5 cm
+        move(200)   # forward 10 cm
+        move(-30)   # backward 5 cm
 
-    # 4. Wait for 5 seconds
+    # 4. Wait for 2 seconds
     wait(2000)
+    
+
+    move(-50)
 
     # 5. Move backward 10 cm
     turn(-46)

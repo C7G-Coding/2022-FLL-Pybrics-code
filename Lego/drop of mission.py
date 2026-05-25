@@ -66,7 +66,7 @@ def turn(angle):
 
 def arm_down():
     """Lower the arm."""
-    lift_motor.run_target(100, -5)   # down position (adjust if needed)
+    lift_motor.run_target(100, -10)   # down position (adjust if needed)
     wait(500)
 
 def arm_up():

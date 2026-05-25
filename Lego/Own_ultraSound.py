@@ -116,12 +116,12 @@ def turn(angle):
 def arm_up():
     """Raise the arm to its high position."""
     lift_motor.reset_angle(0)
-    lift_motor.run_target(100, 5)   # Up angle (adjust if needed)
+    lift_motor.run_target(200, 45)   # Up angle (adjust if needed)
     wait(500)
 
 def arm_down():
     """Lower the arm (not used here, but available)."""
-    lift_motor.run_target(100, -2)
+    lift_motor.run_target(200, -45)
     wait(520)
 
 def main():
@@ -191,7 +191,9 @@ def main():
 
             # # Print a final message.
             # print("Reversed away from object.")
-
+            arm_down()
+            arm_up()
+            move(-100)
             # Break out of the loop so that the program can end3.
             break
 
@@ -208,9 +210,7 @@ def main():
     # Stop the robot at the end of the program to ensure it is no longer moving.
     robot.stop()
 
-    arm_down()
-    arm_up()
-    move(-100)
+    
 
 
 
