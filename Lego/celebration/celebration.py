@@ -50,6 +50,8 @@ except:
 wait(1500)
 
 robot.turn(720)
-robot.drive(-600,0)
+robot.straight(-800)
+
+robot.stop()
 
 
